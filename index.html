@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Chat</title>
+  <style>
+    body { font-family: sans-serif; padding: 10px; }
+    #chatlog { height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px; margin-bottom: 10px; }
+    #chatlog div { margin: 5px 0; }
+    input, button { padding: 6px; margin-right: 5px; }
+  </style>
+</head>
+<body>
+  <h2>Chat</h2>
+  <div id="chatlog"></div>
+  <input id="name" placeholder="Your name">
+  <input id="msg" placeholder="Type message">
+  <button onclick="send()">Send</button>
+  <button onclick="clearChat()">Delete Chat</button>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "yourapp.firebaseapp.com",
+      databaseURL: "https://yourapp-default-rtdb.firebaseio.com",
+      projectId: "yourapp",
+      storageBucket: "yourapp.appspot.com",
+      messagingSenderId: "xxxx",
+      appId: "1:xxxx:web:xxxx"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const chatRef = db.ref("chat");
+
+    chatRef.on("value", snapshot => {
+      const chatlog = document.getElementById("chatlog");
+      chatlog.innerHTML = "";
+      snapshot.forEach(child => {
+        const msg = child.val();
+        const div = document.createElement("div");
+        div.textContent = `${msg.name}: ${msg.text}`;
+        chatlog.appendChild(div);
+      });
+      chatlog.scrollTop = chatlog.scrollHeight;
+    });
+
+    function send() {
+      const name = document.getElementById("name").value;
+      const msg = document.getElementById("msg").value;
+      if (!name || !msg) return;
+      chatRef.push({ name, text: msg });
+      document.getElementById("msg").value = "";
+    }
+
+    function clearChat() {
+      chatRef.remove();
+    }
+  </script>
+</body>
+</html>
