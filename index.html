@@ -261,7 +261,7 @@
     }
 
     function clearChat() {
-      if (confirm("Delete all messages? This cannot be undone.")) {
+      if (confirm("Purge chat?")) {
         chatRef.remove();
       }
     }
@@ -271,6 +271,22 @@
         send();
       }
     }
+  
+    let lastActiveTime = Date.now();
+    function resetInactivityTimer() {
+      lastActiveTime = Date.now();
+    }
+
+    document.addEventListener("keydown", resetInactivityTimer);
+    document.addEventListener("click", resetInactivityTimer);
+
+    setInterval(() => {
+      const now = Date.now();
+      const fiveMinutes = 5 * 60 * 1000;
+      if (now - lastActiveTime > fiveMinutes) {
+        window.location.href = "https://poolclosed.com";
+      }
+    }, 10000);
   </script>
 </body>
 </html>
