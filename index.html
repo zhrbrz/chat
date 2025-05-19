@@ -1,59 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Simple Chat</title>
-<style>
-  body {
-    background-color: black;
-    color: white;
-    font-family: "Courier New", monospace;
-    padding: 10px;
-    position: relative;
-  }
+  <title>Ghost Chatroom</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: "Courier New", monospace;
+      padding: 10px;
+      position: relative;
+    }
 
-  #chatlog {
-    height: 300px;
-    overflow-y: scroll;
-    border: 1px solid #444;
-    padding: 10px;
-    backdrop-filter: blur(2px);
-    background-color: rgba(0, 0, 0, 0.6);
-    margin-bottom: 10px;
-  }
+    #chatlog {
+      height: 300px;
+      overflow-y: scroll;
+      border: 1px solid #444;
+      padding: 10px;
+      backdrop-filter: blur(2px);
+      background-color: rgba(0, 0, 0, 0.6);
+      margin-bottom: 10px;
+    }
 
-  #chatlog div {
-    margin: 5px 0;
-  }
+    #chatlog div {
+      margin: 5px 0;
+    }
 
-  input, button {
-    padding: 6px;
-    margin-right: 5px;
-    font-family: "Courier New", monospace;
-    background: #111;
-    color: white;
-    border: 1px solid #333;
-  }
+    input, button {
+      padding: 6px;
+      margin-right: 5px;
+      font-family: "Courier New", monospace;
+      background: #111;
+      color: white;
+      border: 1px solid #333;
+    }
 
-  input::placeholder {
-    color: #aaa;
-  }
+    input::placeholder {
+      color: #aaa;
+    }
 
-  /* Grain overlay */
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: url('https://grainy-gradients.vercel.app/noise.png');
-    opacity: 0.06;
-    pointer-events: none;
-    z-index: 9999;
-  }
-</style>
-
+    /* Grain overlay */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('https://grainy-gradients.vercel.app/noise.png');
+      opacity: 0.06;
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
 </head>
 <body>
-  <h2>Chat</h2>
+  <h2>Ghost Chatroom</h2>
+
   <div id="chatlog"></div>
+
+  <div style="margin-bottom: 10px;">
+    <label>Choose your color:</label>
+    <label><input type="radio" name="color" value="white" checked> White</label>
+    <label><input type="radio" name="color" value="cyan"> Blue</label>
+    <label><input type="radio" name="color" value="orange"> Amber</label>
+  </div>
+
   <input id="name" placeholder="Your name">
   <input id="msg" placeholder="Type message">
   <button onclick="send()">Send</button>
@@ -63,44 +71,53 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyB1YG71aHEqmD8Q5H48Yyqp4JkYZW4ECx0",
-  authDomain: "chat-bb82a.firebaseapp.com",
-  databaseURL: "https://chat-bb82a-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "chat-bb82a",
-  storageBucket: "chat-bb82a.firebasestorage.app",
-  messagingSenderId: "273407332767",
-  appId: "1:273407332767:web:f34bc60e9d0889e2e42daa"
-};
+      apiKey: "AIzaSyB1YG71aHEqmD8Q5H48Yyqp4JkYZW4ECx0",
+      authDomain: "chat-bb82a.firebaseapp.com",
+      databaseURL: "https://chat-bb82a-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "chat-bb82a",
+      storageBucket: "chat-bb82a.firebasestorage.app",
+      messagingSenderId: "273407332767",
+      appId: "1:273407332767:web:f34bc60e9d0889e2e42daa"
+    };
 
-// Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const chatRef = db.ref("chat");
 
-chatRef.on("value", snapshot => {
-  const chatlog = document.getElementById("chatlog");
-  chatlog.innerHTML = "";
-  snapshot.forEach(child => {
-    const msg = child.val();
-    const div = document.createElement("div");
-    div.innerHTML = `<span style="color: ${msg.color || 'white'};"><strong>${msg.name}</strong>: ${msg.text}</span>`;
-    chatlog.appendChild(div);
-  });
-  chatlog.scrollTop = chatlog.scrollHeight;
-});
+    chatRef.on("value", snapshot => {
+      const chatlog = document.getElementById("chatlog");
+      chatlog.innerHTML = "";
+      snapshot.forEach(child => {
+        const msg = child.val();
+        const div = document.createElement("div");
+        const color = msg.color || "white";
+        div.innerHTML = `<span style="color: ${color};"><strong>${msg.name}</strong>: ${msg.text}</span>`;
+        chatlog.appendChild(div);
+      });
+      chatlog.scrollTop = chatlog.scrollHeight;
+    });
 
     function send() {
-  const name = document.getElementById("name").value.trim();
-  const msg = document.getElementById("msg").value.trim();
-  if (!name || !msg) return;
+      const nameInput = document.getElementById("name");
+      const msgInput = document.getElementById("msg");
+      const colorPick = document.querySelector('input[name="color"]:checked');
 
-  const color = document.querySelector('input[name="color"]:checked').value;
-  chatRef.push({ name, text: msg, color });
-  document.getElementById("msg").value = "";
-}
+      if (!nameInput || !msgInput || !colorPick) return;
+
+      const name = nameInput.value.trim();
+      const msg = msgInput.value.trim();
+      const color = colorPick.value;
+
+      if (!name || !msg) return;
+
+      chatRef.push({ name, text: msg, color });
+      msgInput.value = "";
+    }
 
     function clearChat() {
-      chatRef.remove();
+      if (confirm("Delete all messages? This cannot be undone.")) {
+        chatRef.remove();
+      }
     }
   </script>
 </body>
