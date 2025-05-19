@@ -168,8 +168,8 @@
     <div id="title">POOP ROOT</div>
     <div id="delete-btn" onclick="clearChat()">(t)erminate</div>
   </div>
-
-  <div id="chatlog"></div>
+<div id="presence-count" style="color:white; font-size: 14px; text-align: center; margin-top: -40px; margin-bottom: 40px; text-shadow: 0 0 2px white;">0 here</div>
+<div id="chatlog"></div>
 
   <div id="msg-container">
     <span class="control-btn" onclick="send()">&gt;:</span>
@@ -189,7 +189,17 @@
     <span class="color-choice orange" onclick="setColor('orange', this)">A</span>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js">// track presence
+const myPresenceKey = db.ref("presence").push().key;
+window.myPresenceKey = myPresenceKey;
+presenceRef.child(myPresenceKey).onDisconnect().remove();
+presenceRef.child(myPresenceKey).set(Date.now());
+
+presenceRef.on("value", snapshot => {
+  const count = snapshot.numChildren();
+  document.getElementById("presence-count").innerText = count + " here";
+});
+</script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script>
     let selectedColor = "white";
@@ -225,6 +235,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+const presenceRef = db.ref("presence");
     const chatRef = db.ref("chat");
 
     chatRef.on("value", snapshot => {
@@ -267,6 +278,7 @@
     }
 
     function handleKey(e) {
+      resetInactivityTimer();
       if (e.key === "Enter") {
         send();
       }
@@ -281,12 +293,16 @@
     document.addEventListener("click", resetInactivityTimer);
 
     setInterval(() => {
-      const now = Date.now();
-      const fiveMinutes = 5 * 60 * 1000;
-      if (now - lastActiveTime > fiveMinutes) {
-        window.location.href = "https://poolclosed.com";
-      }
-    }, 10000);
+  const now = Date.now();
+  const fiveMinutes = 5 * 60 * 1000;
+  if (now - lastActiveTime > fiveMinutes) {
+    window.location.href = "https://poolclosed.com";
+  }
+  // update presence heartbeat
+  if (window.myPresenceKey) {
+    presenceRef.child(window.myPresenceKey).set(Date.now());
+  }
+}, 10000);
   </script>
 </body>
 </html>
