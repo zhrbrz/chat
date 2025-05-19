@@ -223,7 +223,7 @@
       msgInput.value = "";
     }
     function clearChat() {
-      if (confirm("Delete all chat messages?")) {
+      if (confirm("purge chat?")) {
         chatRef.remove().then(() => {
           document.getElementById("chatlog").innerHTML = "";
         }).catch(err => {
