@@ -28,14 +28,22 @@
       animation: blink 1s step-start infinite;
     }
 
+    #delete-btn {
+      color: red;
+      font-size: 20px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+
     #chatlog {
       height: 300px;
       overflow-y: scroll;
-      border: 1px solid #444;
       padding: 10px;
       backdrop-filter: blur(2px);
       background-color: rgba(0, 0, 0, 0.6);
       margin-bottom: 10px;
+      border: none;
     }
 
     #chatlog div {
@@ -54,11 +62,17 @@
       color: #aaa;
     }
 
-    #msg {
-      width: 100%;
+    #msg-container {
+      display: flex;
+      align-items: center;
       border-bottom: 2px solid red;
       margin-bottom: 10px;
+    }
+
+    #msg {
+      flex: 1;
       padding: 6px;
+      outline: none;
     }
 
     .controls {
@@ -88,7 +102,6 @@
     .cyan { color: cyan; }
     .orange { color: orange; }
 
-    /* Animated grain */
     body::before {
       content: "";
       position: fixed;
@@ -99,22 +112,39 @@
       z-index: 9999;
       animation: grainShift 5s infinite;
     }
+
+    /* Custom scrollbar */
+    #chatlog::-webkit-scrollbar {
+      width: 14px;
+    }
+
+    #chatlog::-webkit-scrollbar-track {
+      background: #000;
+      border-radius: 50px;
+    }
+
+    #chatlog::-webkit-scrollbar-thumb {
+      background: #222;
+      border: 3px solid white;
+      border-radius: 50px;
+    }
   </style>
 </head>
 <body>
   <h2 id="title">poop root</h2>
+  <div id="delete-btn" onclick="clearChat()">X</div>
 
   <div id="chatlog"></div>
 
-  <input id="msg" placeholder="Type message">
+  <div id="msg-container">
+    <input id="msg" placeholder="Type message" onkeydown="handleKey(event)">
+    <span class="control-btn" onclick="send()">&gt;|</span>
+  </div>
 
   <div class="controls">
     <span class="color-choice white active" onclick="setColor('white', this)">W</span>
     <span class="color-choice cyan" onclick="setColor('cyan', this)">B</span>
     <span class="color-choice orange" onclick="setColor('orange', this)">A</span>
-
-    <span class="control-btn" onclick="send()">&gt;|</span>
-    <span class="control-btn" onclick="clearChat()">X</span>
   </div>
 
   <input id="name" placeholder="Your name">
@@ -175,6 +205,12 @@
     function clearChat() {
       if (confirm("Delete all messages? This cannot be undone.")) {
         chatRef.remove();
+      }
+    }
+
+    function handleKey(e) {
+      if (e.key === "Enter") {
+        send();
       }
     }
   </script>
