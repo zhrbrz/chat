@@ -3,12 +3,29 @@
 <head>
   <title>Ghost Chatroom</title>
   <style>
+    @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0; }
+    }
+
+    @keyframes grainShift {
+      0% { background-position: 0 0; filter: blur(2px); }
+      50% { background-position: 10px 5px; filter: blur(3px); }
+      100% { background-position: 0 0; filter: blur(2px); }
+    }
+
     body {
       background-color: black;
       color: white;
       font-family: "Courier New", monospace;
       padding: 10px;
       position: relative;
+      font-size: 18px;
+    }
+
+    #title {
+      color: red;
+      animation: blink 1s step-start infinite;
     }
 
     #chatlog {
@@ -26,19 +43,52 @@
     }
 
     input, button {
-      padding: 6px;
-      margin-right: 5px;
       font-family: "Courier New", monospace;
-      background: #111;
+      background: transparent;
       color: white;
-      border: 1px solid #333;
+      border: none;
+      font-size: 18px;
     }
 
     input::placeholder {
       color: #aaa;
     }
 
-    /* Grain overlay */
+    #msg {
+      width: 100%;
+      border-bottom: 2px solid red;
+      margin-bottom: 10px;
+      padding: 6px;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .control-btn {
+      color: red;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .color-choice {
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .color-choice.active {
+      text-decoration: underline;
+    }
+
+    .white { color: white; }
+    .cyan { color: cyan; }
+    .orange { color: orange; }
+
+    /* Animated grain */
     body::before {
       content: "";
       position: fixed;
@@ -47,29 +97,39 @@
       opacity: 0.06;
       pointer-events: none;
       z-index: 9999;
+      animation: grainShift 5s infinite;
     }
   </style>
 </head>
 <body>
-  <h2>Ghost Chatroom</h2>
+  <h2 id="title">poop root</h2>
 
   <div id="chatlog"></div>
 
-  <div style="margin-bottom: 10px;">
-    <label>Choose your color:</label>
-    <label><input type="radio" name="color" value="white" checked> White</label>
-    <label><input type="radio" name="color" value="cyan"> Blue</label>
-    <label><input type="radio" name="color" value="orange"> Amber</label>
+  <input id="msg" placeholder="Type message">
+
+  <div class="controls">
+    <span class="color-choice white active" onclick="setColor('white', this)">W</span>
+    <span class="color-choice cyan" onclick="setColor('cyan', this)">B</span>
+    <span class="color-choice orange" onclick="setColor('orange', this)">A</span>
+
+    <span class="control-btn" onclick="send()">&gt;|</span>
+    <span class="control-btn" onclick="clearChat()">X</span>
   </div>
 
   <input id="name" placeholder="Your name">
-  <input id="msg" placeholder="Type message">
-  <button onclick="send()">Send</button>
-  <button onclick="clearChat()">Delete Chat</button>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script>
+    let selectedColor = "white";
+
+    function setColor(color, element) {
+      selectedColor = color;
+      document.querySelectorAll('.color-choice').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+    }
+
     const firebaseConfig = {
       apiKey: "AIzaSyB1YG71aHEqmD8Q5H48Yyqp4JkYZW4ECx0",
       authDomain: "chat-bb82a.firebaseapp.com",
@@ -100,13 +160,11 @@
     function send() {
       const nameInput = document.getElementById("name");
       const msgInput = document.getElementById("msg");
-      const colorPick = document.querySelector('input[name="color"]:checked');
-
-      if (!nameInput || !msgInput || !colorPick) return;
+      if (!nameInput || !msgInput) return;
 
       const name = nameInput.value.trim();
       const msg = msgInput.value.trim();
-      const color = colorPick.value;
+      const color = selectedColor;
 
       if (!name || !msg) return;
 
