@@ -258,10 +258,29 @@
     }
 
     function clearChat() {
-      if (confirm("Delete all chat messages?")) {
-        chatRef.remove();
-      }
-    }
-  </script>
+  if (confirm("Purge chat?")) {
+    chatRef.remove().then(() => {
+      document.getElementById("chatlog").innerHTML = "";
+    });
+  }
+}
+  
+const presenceRef = db.ref("presence");
+const myPresenceKey = presenceRef.push().key;
+window.myPresenceKey = myPresenceKey;
+presenceRef.child(myPresenceKey).onDisconnect().remove();
+presenceRef.child(myPresenceKey).set(Date.now());
+
+presenceRef.on("value", snapshot => {
+  const count = snapshot.numChildren();
+  document.getElementById("presence-count").innerText = count + " here";
+});
+
+setInterval(() => {
+  if (window.myPresenceKey) {
+    presenceRef.child(window.myPresenceKey).set(Date.now());
+  }
+}, 10000);
+</script>
 </body>
 </html>
