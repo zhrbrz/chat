@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ghost Chatroom</title>
+  <title>what</title>
   <style>
-    @keyframes blink {
+    @keyframes blinkSlow {
       0%, 50%, 100% { opacity: 1; }
-      25%, 75% { opacity: 0; }
+      25% { opacity: 0; }
     }
 
     @keyframes grainShift {
-      0% { background-position: 0 0; filter: blur(2px); }
-      50% { background-position: 10px 5px; filter: blur(3px); }
-      100% { background-position: 0 0; filter: blur(2px); }
+      0% { background-position: 0 0; filter: blur(3px); }
+      50% { background-position: 10px 5px; filter: blur(4px); }
+      100% { background-position: 0 0; filter: blur(3px); }
     }
 
     body {
@@ -21,16 +21,24 @@
       padding: 10px;
       position: relative;
       font-size: 18px;
+      font-weight: bold;
+      backdrop-filter: blur(3px);
+      text-shadow: 0 0 2px white;
     }
+
+    .white { text-shadow: 0 0 2px white; color: white; }
+    .cyan { text-shadow: 0 0 2px cyan; color: cyan; }
+    .orange { text-shadow: 0 0 2px orange; color: orange; }
+    .control-btn { text-shadow: 0 0 2px red; }
+    #title, #delete-btn { text-shadow: 0 0 2px red; }
 
     #header {
       text-align: center;
-      margin-bottom: 25px;
+      margin-bottom: 50px;
     }
 
     #title {
       color: red;
-      animation: blink 1s step-start infinite;
       font-size: 24px;
     }
 
@@ -38,14 +46,14 @@
       color: red;
       font-size: 16px;
       cursor: pointer;
-      margin-top: 5px;
+      margin-top: 10px;
     }
 
     #chatlog {
       height: 300px;
       overflow-y: scroll;
       padding: 10px;
-      backdrop-filter: blur(2px);
+      backdrop-filter: blur(3px);
       background-color: rgba(0, 0, 0, 0.6);
       margin: 10px 0;
       border: none;
@@ -55,16 +63,29 @@
       margin: 5px 0;
     }
 
+    #chatlog::after {
+      content: ">:";
+      color: red;
+      display: block;
+      animation: blinkSlow 1.2s step-start infinite;
+      text-align: left;
+      margin-top: 10px;
+      text-shadow: 0 0 2px red;
+    }
+
     input, button {
       font-family: "Courier New", monospace;
       background: transparent;
       color: white;
       border: none;
       font-size: 18px;
+      font-weight: bold;
+      text-shadow: 0 0 2px white;
     }
 
     input::placeholder {
       color: #aaa;
+      text-shadow: 0 0 2px #aaa;
     }
 
     #msg-container {
@@ -81,17 +102,21 @@
       outline: none;
     }
 
+    .name-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+
     .name-label {
       color: white;
-      margin-bottom: 4px;
-      display: inline-block;
     }
 
     #name-line {
       border-bottom: 2px solid red;
       width: 180px;
       height: 24px;
-      margin-bottom: 25px;
     }
 
     .controls {
@@ -99,13 +124,6 @@
       align-items: center;
       gap: 15px;
       margin-top: 10px;
-    }
-
-    .control-btn {
-      color: red;
-      cursor: pointer;
-      font-size: 20px;
-      padding-right: 8px;
     }
 
     .color-choice {
@@ -118,10 +136,6 @@
       text-decoration: underline;
     }
 
-    .white { color: white; }
-    .cyan { color: cyan; }
-    .orange { color: orange; }
-
     body::before {
       content: "";
       position: fixed;
@@ -133,7 +147,6 @@
       animation: grainShift 5s infinite;
     }
 
-    /* Custom scrollbar */
     #chatlog::-webkit-scrollbar {
       width: 14px;
     }
@@ -160,12 +173,14 @@
 
   <div id="msg-container">
     <span class="control-btn" onclick="send()">&gt;:</span>
-    <input id="msg" placeholder="_enter or >: to send_______________" onkeydown="handleKey(event)">
+    <input id="msg" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="type" onkeydown="handleKey(event)">
   </div>
 
-  <div class="name-label">name</div><br>
-  <div id="name-line">
-    <input id="name" style="width:100%;border:none;background:transparent;outline:none;height:100%;color:white;">
+  <div class="name-section">
+    <div class="name-label">name</div>
+    <div id="name-line">
+      <input id="name" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:100%;border:none;background:transparent;outline:none;height:100%;color:white;text-shadow: 0 0 2px white;">
+    </div>
   </div>
 
   <div class="controls">
@@ -178,6 +193,19 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script>
     let selectedColor = "white";
+
+    const birdNames = [
+      "Robin", "Magpie", "Wren", "Jay", "Swallow", "Swift", "Starling", "Tit", "Warbler", "Finch",
+      "Nuthatch", "Treecreeper", "Goldcrest", "Firecrest", "Lark", "Pipit", "Bunting", "Chiffchaff", "Redstart", "Thrush",
+      "Blackbird", "Songthrush", "Fieldfare", "Redwing", "Bullfinch", "Greenfinch", "Siskin", "Chaffinch", "Crossbill", "Hawfinch",
+      "Cuckoo", "Crested Tit", "Long-tailed Tit", "Bearded Tit", "Woodpecker", "Great Tit", "Blue Tit", "Coal Tit", "Marsh Tit", "Willow Tit",
+      "Lapwing", "Curlew", "Oystercatcher", "Dunlin", "Knot", "Avocet", "Redshank", "Greenshank", "Sandpiper", "Snipe",
+      "Ruff", "Godwit", "Phalarope", "Turnstone", "Buzzard", "Kestrel", "Merlin", "Hobby", "Owl", "Barn Owl",
+      "Tawny Owl", "Little Owl", "Eagle", "Red Kite", "Peregrine", "Sparrowhawk", "Harrier", "Heron", "Bittern", "Egret",
+      "Cormorant", "Shag", "Gannet", "Guillemot", "Razorbill", "Puffin", "Tern", "Skua", "Kittiwake", "Fulmar",
+      "Swan", "Goose", "Greylag", "Brent Goose", "Teal", "Wigeon", "Gadwall", "Mallard", "Pochard", "Tufted Duck",
+      "Scaup", "Goldeneye", "Smew", "Merganser", "Shelduck", "Eider", "Shoveler", "Woodcock", "Nightjar", "Kingfisher"
+    ];
 
     function setColor(color, element) {
       selectedColor = color;
@@ -206,7 +234,7 @@
         const msg = child.val();
         const div = document.createElement("div");
         const color = msg.color || "white";
-        div.innerHTML = `<span style="color: ${color};"><strong>${msg.name}</strong>: ${msg.text}</span>`;
+        div.innerHTML = `<span style="color: ${color}; text-shadow: 0 0 2px ${color};"><strong>${msg.name}</strong>: ${msg.text}</span>`;
         chatlog.appendChild(div);
       });
       chatlog.scrollTop = chatlog.scrollHeight;
@@ -217,11 +245,16 @@
       const msgInput = document.getElementById("msg");
       if (!nameInput || !msgInput) return;
 
-      const name = nameInput.value.trim();
+      let name = nameInput.value.trim();
+      if (!name) {
+        name = birdNames[Math.floor(Math.random() * birdNames.length)];
+        nameInput.value = name;
+      }
+
       const msg = msgInput.value.trim();
       const color = selectedColor;
 
-      if (!name || !msg) return;
+      if (!msg) return;
 
       chatRef.push({ name, text: msg, color });
       msgInput.value = "";
