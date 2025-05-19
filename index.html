@@ -189,13 +189,78 @@
     <span class="color-choice orange" onclick="setColor('orange', this)">A</span>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script>
+    let selectedColor = 'white';
+
+    const birdNames = ["Robin","Magpie","Wren","Jay","Swallow","Swift","Starling","Tit","Warbler","Finch","Nuthatch","Treecreeper","Goldcrest","Firecrest","Lark","Pipit","Bunting","Chiffchaff","Redstart","Thrush","Blackbird","Songthrush","Fieldfare","Redwing","Bullfinch","Greenfinch","Siskin","Chaffinch","Crossbill","Hawfinch","Cuckoo","Crested Tit","Long-tailed Tit","Bearded Tit","Woodpecker","Great Tit","Blue Tit","Coal Tit","Marsh Tit","Willow Tit","Lapwing","Curlew","Oystercatcher","Dunlin","Knot","Avocet","Redshank","Greenshank","Sandpiper","Snipe","Ruff","Godwit","Phalarope","Turnstone","Buzzard","Kestrel","Merlin","Hobby","Owl","Barn Owl","Tawny Owl","Little Owl","Eagle","Red Kite","Peregrine","Sparrowhawk","Harrier","Heron","Bittern","Egret","Cormorant","Shag","Gannet","Guillemot","Razorbill","Puffin","Tern","Skua","Kittiwake","Fulmar","Swan","Goose","Greylag","Brent Goose","Teal","Wigeon","Gadwall","Mallard","Pochard","Tufted Duck","Scaup","Goldeneye","Smew","Merganser","Shelduck","Eider","Shoveler","Woodcock","Nightjar","Kingfisher"];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const nameInput = document.getElementById("name");
+      if (!nameInput.value.trim()) {
+        nameInput.value = birdNames[Math.floor(Math.random() * birdNames.length)];
+      }
+    });
+
     function setColor(color, el) {
       selectedColor = color;
       document.querySelectorAll('.color-choice').forEach(e => e.classList.remove('active'));
       el.classList.add('active');
+    }
+
+    function handleKey(event) {
+      if (event.key === "Enter") {
+        send();
+      }
+    }
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1YG71aHEqmD8Q5H48Yyqp4JkYZW4ECx0",
+      authDomain: "chat-bb82a.firebaseapp.com",
+      databaseURL: "https://chat-bb82a-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "chat-bb82a",
+      storageBucket: "chat-bb82a.appspot.com",
+      messagingSenderId: "273407332767",
+      appId: "1:273407332767:web:f34bc60e9d0889e2e42daa"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const chatRef = db.ref("chat");
+
+    chatRef.on("value", snapshot => {
+      const chatlog = document.getElementById("chatlog");
+      chatlog.innerHTML = "";
+      snapshot.forEach(child => {
+        const msg = child.val();
+        const div = document.createElement("div");
+        const color = msg.color || "white";
+        div.innerHTML = `<span style="color:${color}; text-shadow: 0 0 2px ${color};"><strong>${msg.name}</strong>: ${msg.text}</span>`;
+        chatlog.appendChild(div);
+      });
+      chatlog.scrollTop = chatlog.scrollHeight;
+    });
+
+    function send() {
+      const nameInput = document.getElementById("name");
+      const msgInput = document.getElementById("msg");
+      let name = nameInput.value.trim();
+      const text = msgInput.value.trim();
+      if (!name) {
+        name = birdNames[Math.floor(Math.random() * birdNames.length)];
+        nameInput.value = name;
+      }
+      if (!text) return;
+      chatRef.push({ name, text, color: selectedColor });
+      msgInput.value = "";
+    }
+
+    function clearChat() {
+      if (confirm("Delete all chat messages?")) {
+        chatRef.remove();
+      }
     }
   </script>
 </body>
