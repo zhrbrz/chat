@@ -23,17 +23,21 @@
       font-size: 18px;
     }
 
+    #header {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
     #title {
       color: red;
       animation: blink 1s step-start infinite;
+      font-size: 24px;
     }
 
     #delete-btn {
       color: red;
-      font-size: 20px;
+      font-size: 16px;
       cursor: pointer;
-      margin-bottom: 10px;
-      display: inline-block;
     }
 
     #chatlog {
@@ -42,7 +46,7 @@
       padding: 10px;
       backdrop-filter: blur(2px);
       background-color: rgba(0, 0, 0, 0.6);
-      margin-bottom: 10px;
+      margin: 10px 0;
       border: none;
     }
 
@@ -131,23 +135,25 @@
   </style>
 </head>
 <body>
-  <h2 id="title">poop root</h2>
-  <div id="delete-btn" onclick="clearChat()">X</div>
+  <div id="header">
+    <div id="title">POOP ROOT</div>
+    <div id="delete-btn" onclick="clearChat()">(t)erminate</div>
+  </div>
 
   <div id="chatlog"></div>
 
   <div id="msg-container">
-    <input id="msg" placeholder="Type message" onkeydown="handleKey(event)">
+    <input id="msg" placeholder=">: _enter or >: to send_______________" onkeydown="handleKey(event)">
     <span class="control-btn" onclick="send()">&gt;|</span>
   </div>
+
+  <input id="name" placeholder="_____NAME_____">
 
   <div class="controls">
     <span class="color-choice white active" onclick="setColor('white', this)">W</span>
     <span class="color-choice cyan" onclick="setColor('cyan', this)">B</span>
     <span class="color-choice orange" onclick="setColor('orange', this)">A</span>
   </div>
-
-  <input id="name" placeholder="Your name">
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -203,7 +209,7 @@
     }
 
     function clearChat() {
-      if (confirm("Delete all messages? This cannot be undone.")) {
+      if (confirm("Purge?")) {
         chatRef.remove();
       }
     }
