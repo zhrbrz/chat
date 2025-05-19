@@ -25,7 +25,7 @@
 
     #header {
       text-align: center;
-      margin-bottom: 5px;
+      margin-bottom: 25px;
     }
 
     #title {
@@ -38,6 +38,7 @@
       color: red;
       font-size: 16px;
       cursor: pointer;
+      margin-top: 5px;
     }
 
     #chatlog {
@@ -70,13 +71,27 @@
       display: flex;
       align-items: center;
       border-bottom: 2px solid red;
-      margin-bottom: 10px;
+      margin-top: 20px;
+      margin-bottom: 30px;
     }
 
     #msg {
       flex: 1;
       padding: 6px;
       outline: none;
+    }
+
+    .name-label {
+      color: white;
+      margin-bottom: 4px;
+      display: inline-block;
+    }
+
+    #name-line {
+      border-bottom: 2px solid red;
+      width: 180px;
+      height: 24px;
+      margin-bottom: 25px;
     }
 
     .controls {
@@ -90,6 +105,7 @@
       color: red;
       cursor: pointer;
       font-size: 20px;
+      padding-right: 8px;
     }
 
     .color-choice {
@@ -143,11 +159,14 @@
   <div id="chatlog"></div>
 
   <div id="msg-container">
-    <input id="msg" placeholder=">: _enter or >: to send_______________" onkeydown="handleKey(event)">
-    <span class="control-btn" onclick="send()">&gt;|</span>
+    <span class="control-btn" onclick="send()">&gt;:</span>
+    <input id="msg" placeholder="_enter or >: to send_______________" onkeydown="handleKey(event)">
   </div>
 
-  <input id="name" placeholder="_____NAME_____">
+  <div class="name-label">name</div><br>
+  <div id="name-line">
+    <input id="name" style="width:100%;border:none;background:transparent;outline:none;height:100%;color:white;">
+  </div>
 
   <div class="controls">
     <span class="color-choice white active" onclick="setColor('white', this)">W</span>
@@ -209,7 +228,7 @@
     }
 
     function clearChat() {
-      if (confirm("Purge?")) {
+      if (confirm("Delete all messages? This cannot be undone.")) {
         chatRef.remove();
       }
     }
