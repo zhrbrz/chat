@@ -21,13 +21,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script>
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "yourapp.firebaseapp.com",
-      databaseURL: "https://yourapp-default-rtdb.firebaseio.com",
-      projectId: "yourapp",
-      storageBucket: "yourapp.appspot.com",
-      messagingSenderId: "xxxx",
-      appId: "1:xxxx:web:xxxx"
+  apiKey: "AIzaSyB1YG71aHEqmD8Q5H48Yyqp4JkYZW4ECx0",
+  authDomain: "chat-bb82a.firebaseapp.com",
+  databaseURL: "https://chat-bb82a-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "chat-bb82a",
+  storageBucket: "chat-bb82a.firebasestorage.app",
+  messagingSenderId: "273407332767",
+  appId: "1:273407332767:web:f34bc60e9d0889e2e42daa"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
