@@ -27,20 +27,10 @@
     .cyan { text-shadow: 0 0 2px cyan; color: cyan; }
     .orange { text-shadow: 0 0 2px orange; color: orange; }
     .control-btn { text-shadow: 0 0 2px red; }
-    #title, #delete-btn { text-shadow: 0 0 2px red; }
+    #delete-btn { text-shadow: 0 0 2px red; color: red; font-size: 16px; cursor: pointer; margin-top: 10px; }
     #header {
       text-align: center;
       margin-bottom: 50px;
-    }
-    #title {
-      color: red;
-      font-size: 24px;
-    }
-    #delete-btn {
-      color: red;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
     }
     #chatlog {
       height: 340px;
@@ -138,10 +128,23 @@
       border: 3px solid white;
       border-radius: 50px;
     }
+    #spiral {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 300px;
+      overflow: hidden;
+      white-space: pre;
+      font-family: monospace;
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.3;
+    }
   </style>
 </head>
 <body style="padding-top: 340px;">
-  <div id="spiral" style="position: absolute; top: 0; left: 0; right: 0; height: 300px; overflow: hidden; white-space: pre; font-family: monospace; font-size: 12px; text-align: center; line-height: 1.3;"></div>
+  <div id="spiral"></div>
   <div id="header" style="margin-top: -20px;">
     <div id="delete-btn" onclick="clearChat()">(t)erminate</div>
   </div>
@@ -162,8 +165,38 @@
     <span class="color-choice cyan" onclick="setColor('cyan', this)">B</span>
     <span class="color-choice orange" onclick="setColor('orange', this)">A</span>
   </div>
-  <script>
-    let selectedColor = 'white';
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB1YG71aHEqmD8Q5H48Yyqp4JkYZW4ECx0",
+    authDomain: "chat-bb82a.firebaseapp.com",
+    databaseURL: "https://chat-bb82a-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "chat-bb82a",
+    storageBucket: "chat-bb82a.appspot.com",
+    messagingSenderId: "273407332767",
+    appId: "1:273407332767:web:f34bc60e9d0889e2e42daa"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const chatRef = db.ref("chat");
+
+  chatRef.on("value", snapshot => {
+    const chatlog = document.getElementById("chatlog");
+    chatlog.innerHTML = "";
+    snapshot.forEach(child => {
+      const msg = child.val();
+      const div = document.createElement("div");
+      const color = msg.color || "white";
+      div.innerHTML = `<span style="color:${color}; text-shadow: 0 0 2px ${color};"><strong>${msg.name}</strong>: ${msg.text}</span>`;
+      chatlog.appendChild(div);
+    });
+    chatlog.scrollTop = chatlog.scrollHeight;
+  });
+
+</script>
+<script>
+  let selectedColor = 'white';
     const birdNames = ["Robin","Magpie","Wren","Jay","Swallow","Swift","Starling","Tit","Warbler","Finch","Nuthatch","Treecreeper","Goldcrest","Firecrest","Lark","Pipit","Bunting","Chiffchaff","Redstart","Thrush","Blackbird","Songthrush","Fieldfare","Redwing","Bullfinch","Greenfinch","Siskin","Chaffinch","Crossbill","Hawfinch","Cuckoo","Crested Tit","Long-tailed Tit","Bearded Tit","Woodpecker","Great Tit","Blue Tit","Coal Tit","Marsh Tit","Willow Tit","Lapwing","Curlew","Oystercatcher","Dunlin","Knot","Avocet","Redshank","Greenshank","Sandpiper","Snipe","Ruff","Godwit","Phalarope","Turnstone","Buzzard","Kestrel","Merlin","Hobby","Owl","Barn Owl","Tawny Owl","Little Owl","Eagle","Red Kite","Peregrine","Sparrowhawk","Harrier","Heron","Bittern","Egret","Cormorant","Shag","Gannet","Guillemot","Razorbill","Puffin","Tern","Skua","Kittiwake","Fulmar","Swan","Goose","Greylag","Brent Goose","Teal","Wigeon","Gadwall","Mallard","Pochard","Tufted Duck","Scaup","Goldeneye","Smew","Merganser","Shelduck","Eider","Shoveler","Woodcock","Nightjar","Kingfisher"];
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -184,10 +217,34 @@
         send();
       }
     }
-  </script>
-  <script>
-const frames = [
-  `                        @@          
+
+    function send() {
+      const nameInput = document.getElementById("name");
+      const msgInput = document.getElementById("msg");
+      let name = nameInput.value.trim();
+      const text = msgInput.value.trim();
+      if (!name) {
+        name = birdNames[Math.floor(Math.random() * birdNames.length)];
+        nameInput.value = name;
+      }
+      if (!text) return;
+      chatRef.push({ name, text, color: selectedColor });
+      msgInput.value = "";
+    }
+
+    function clearChat() {
+  if (confirm("Delete all chat messages?")) {
+    chatRef.remove().then(() => {
+      const chatlog = document.getElementById("chatlog");
+      if (chatlog) chatlog.innerHTML = "";
+    }).catch(err => {
+      console.error("Failed to clear chat:", err);
+    });
+  }
+}
+
+    const frames = [
+`                        @@          
                         +@@@@       
           .+#@@@@@@%*-     %@@@     
        -@@@@@@%#*#@@@@@@+    @@@@   
@@ -206,7 +263,8 @@ const frames = [
      #@@@@#:             +@@@@@     
        @@@@@@@@*+==+*%@@@@@@@       
           @@@@@@@@@@@@@@@@          `,
-`                                    
+
+`                                 
             -+**#*+-                
         *@@@@@@@@@@@@@@*.           
      -@@@@*:        :*@@@@-         
@@ -225,6 +283,7 @@ const frames = [
      @@@@@#:            :*@@@@@     
        @@@@@@@@%#**#%@@@@@@@@       
           @@@@@@@@@@@@@@@@          `,
+
 `             .:--:.                 
         =#@@@@@@@@@@@@@+            
      +@@@@@%+:.    :+%@@@@+         
@@ -244,6 +303,7 @@ const frames = [
      @@@@@#:             -%@@@@     
        @@@@@@@@%#*+*#%@@@@@@@       
            @@@@@@@@@@@@@@           `,
+
 `          @@@@@@@@@@@@*-            
        @@@@@@@@@@@@@@@@@@%=         
      @@@@@#-           =@@@@+       
@@ -260,9 +320,10 @@ const frames = [
  @@@@   =@@@+            :@@@@.     
   @@@@:   *@@@@#=-..:=*@@@@@:       
    @@@@@.   .*@@@@@@@@@@#-          
-     @@@@@+                         
+     @@@@@+                          
        @@@@@@@*=:.  .:-+#-          
            @@@@@@@@@@@@@@@          `,
+
 `           @@@@@@@@@@@@@@@          
        @@@@@@@@%#**#%@@@@@@@%       
      @@@@@#:            -@@@@@#     
@@ -282,6 +343,7 @@ const frames = [
      @@@@-    .=#@@@@@%*-           
        @@@@%                        
            @                         `,
+
 `           @@@@@@@@@@@@@@           
        @@@@@@@@%#**#%@@@@@@@@       
      @@@@@#:            :#@@@@@     
@@ -300,7 +362,7 @@ const frames = [
          :@@@@*:        :#@@@@:     
             *@@@@@@@@@@@@@@+        
                 -+****=:            `,
-`           @@@@@@@@@@@@@@           
+      `           @@@@@@@@@@@@@@           
        @@@@@@@@*+=+*%@@@@@@@@       
      @@@@@-             .#@@@@@     
    @@@@=    .*%@@@@@@#-    :@@@@@   
@@ -319,6 +381,7 @@ const frames = [
          -@@@@@=.     .-%@@@@%+     
             =@@@@@@@@@@@@@%-        
                  .::::               `,
+
 `           @@@@@@@@@@@@@@           
           .#+-..  .:-+@@@@@@@       
                          -@@@@@     
@@ -338,13 +401,16 @@ const frames = [
        =@@@@=           .#@@@@@     
          :%@@@@@@@@@@@@@@@@@@       
              +@@@@@@@@@@@            `
+      
 ];
-let frame = 0;
-const spiral = document.getElementById("spiral");
-setInterval(() => {
-  spiral.textContent = frames[frame];
-  frame = (frame + 1) % frames.length;
-}, 150);
-</script>
+    let frame = 0;
+    const spiral = document.getElementById("spiral");
+    setInterval(() => {
+      if (spiral) {
+        spiral.textContent = frames[frame];
+        frame = (frame + 1) % frames.length;
+      }
+    }, 150);
+  </script>
 </body>
 </html>
