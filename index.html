@@ -164,18 +164,21 @@
   </div>
   <script>
     let selectedColor = 'white';
-    const birdNames = ["Robin","Magpie","Wren","Jay","Swallow","Swift","Starling","Tit","Warbler","Finch","Nuthatch","Treecreeper","Goldcrest","Firecrest","Lark","Pipit","Bunting","Chiffchaff","Redstart","Thrush","Blackbird","Songthrush","Fieldfare","Redwing","Bullfinch","Greenfinch","Siskin","Chaffinch","Crossbill","Hawfinch","Cuckoo","Crested Tit","Long-tailed Tit","Bearded Tit","Woodpecker","Great Tit","Blue Tit","Coal Tit","Marsh Tit","Willow Tit","Lapwing","Curlew","Oystercatcher","Dunlin","Knot","Avocet","Redshank","Greenshank","Sandpiper","Snipe","Ruff","Godwit","Phalarope","Turnstone","Buzzard","Kestrel","Merlin","Hobby","Owl","Barn Owl","Tawny Owl","Little Owl","Eagle","Red Kite","Peregrine","Sparrowhawk","Harrier","Heron","Bittern","Egret","Cormorant","Shag","Gannet","Guillemot","Razorbill","Puffin","Tern","Skua","Kittiwake","Fulmar","Swan","Goose","Greylag","Brent Goose","Teal","Wigeon","Gadwall","Mallard","Pochard","Tufted Duck","Scaup","Goldeneye","Smew","Merganser","Shelduck","Eider","Shoveler","Woodcock","Nightjar","Kingfisher"];
+    const birdNames = [..."Robin","Magpie","Wren","Jay","Swallow","Swift","Starling","Tit","Warbler","Finch","Nuthatch","Treecreeper","Goldcrest","Firecrest","Lark","Pipit","Bunting","Chiffchaff","Redstart","Thrush","Blackbird","Songthrush","Fieldfare","Redwing","Bullfinch","Greenfinch","Siskin","Chaffinch","Crossbill","Hawfinch","Cuckoo","Crested Tit","Long-tailed Tit","Bearded Tit","Woodpecker","Great Tit","Blue Tit","Coal Tit","Marsh Tit","Willow Tit","Lapwing","Curlew","Oystercatcher","Dunlin","Knot","Avocet","Redshank","Greenshank","Sandpiper","Snipe","Ruff","Godwit","Phalarope","Turnstone","Buzzard","Kestrel","Merlin","Hobby","Owl","Barn Owl","Tawny Owl","Little Owl","Eagle","Red Kite","Peregrine","Sparrowhawk","Harrier","Heron","Bittern","Egret","Cormorant","Shag","Gannet","Guillemot","Razorbill","Puffin","Tern","Skua","Kittiwake","Fulmar","Swan","Goose","Greylag","Brent Goose","Teal","Wigeon","Gadwall","Mallard","Pochard","Tufted Duck","Scaup","Goldeneye","Smew","Merganser","Shelduck","Eider","Shoveler","Woodcock","Nightjar","Kingfisher"];
+
     window.addEventListener('DOMContentLoaded', () => {
       const nameInput = document.getElementById("name");
       if (!nameInput.value.trim()) {
         nameInput.value = birdNames[Math.floor(Math.random() * birdNames.length)];
       }
     });
+
     function setColor(color, el) {
       selectedColor = color;
       document.querySelectorAll('.color-choice').forEach(e => e.classList.remove('active'));
       el.classList.add('active');
     }
+
     function handleKey(event) {
       if (event.key === "Enter") {
         send();
@@ -197,6 +200,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const chatRef = db.ref("chat");
+
     chatRef.on("value", snapshot => {
       const chatlog = document.getElementById("chatlog");
       chatlog.innerHTML = "";
@@ -209,6 +213,7 @@
       });
       chatlog.scrollTop = chatlog.scrollHeight;
     });
+
     function send() {
       const nameInput = document.getElementById("name");
       const msgInput = document.getElementById("msg");
@@ -222,8 +227,9 @@
       chatRef.push({ name, text, color: selectedColor });
       msgInput.value = "";
     }
+
     function clearChat() {
-      if (confirm("purge chat?")) {
+      if (confirm("Delete all chat messages?")) {
         chatRef.remove().then(() => {
           document.getElementById("chatlog").innerHTML = "";
         }).catch(err => {
@@ -231,15 +237,31 @@
         });
       }
     }
+
     const presenceRef = db.ref("presence");
     const myPresenceKey = presenceRef.push().key;
     window.myPresenceKey = myPresenceKey;
     presenceRef.child(myPresenceKey).onDisconnect().remove();
     presenceRef.child(myPresenceKey).set({ online: true, timestamp: Date.now() });
+
     presenceRef.on("value", snapshot => {
-      const count = snapshot.numChildren();
-      document.getElementById("presence-count").innerText = count + " here";
+      const now = Date.now();
+      let activeCount = 0;
+
+      snapshot.forEach(child => {
+        const data = child.val();
+        const key = child.key;
+
+        if (data && data.timestamp && now - data.timestamp < 20000) {
+          activeCount++;
+        } else {
+          presenceRef.child(key).remove();
+        }
+      });
+
+      document.getElementById("presence-count").innerText = activeCount + " here";
     });
+
     setInterval(() => {
       if (window.myPresenceKey) {
         presenceRef.child(window.myPresenceKey).set({ online: true, timestamp: Date.now() });
